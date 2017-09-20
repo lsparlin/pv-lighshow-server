@@ -4,7 +4,8 @@
   "description": "\"socket.io server for pushing color changes to clients\"",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"no tests yet\""
+    "test": "echo \"no tests yet\"",
+    "start": "npm install && node app.js"
   },
   "author": "",
   "license": "ISC",
