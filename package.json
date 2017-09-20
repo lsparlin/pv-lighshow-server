@@ -1,0 +1,18 @@
+{
+  "name": "pv-lightshow-server",
+  "version": "1.0.0",
+  "description": "\"socket.io server for pushing color changes to clients\"",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"no tests yet\""
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.4",
+    "express": "^4.15.4",
+    "express-socket.io": "^1.0.3",
+    "http": "0.0.0",
+    "socket.io": "^2.0.3"
+  }
+}
