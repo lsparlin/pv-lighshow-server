@@ -3,7 +3,7 @@ var ioProm = require('express-socket.io')
 var cors = require('cors')
 
 const app = express()
-var port = process.env.port || 3000
+var port = process.env.PORT || 3000
 var server = ioProm.init(app)
 
 app.use(cors())
