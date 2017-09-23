@@ -1,5 +1,3 @@
-node_modules/
-public/
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
