@@ -2,7 +2,7 @@ var express = require('express')
 var ioProm = require('express-socket.io')
 var cors = require('cors')
 
-var ColorDuration = require('./src/js/ColorDuration.js')
+var SequenceStore = require('./src/js/SequenceStore.js')
 
 const app = express()
 var port = process.env.PORT || 3000
@@ -22,25 +22,23 @@ app.put('/color/:color', (req, res) => {
 })
 
 app.put('/sequence/:name', (req, res) => {
-  let seq = [
-    new ColorDuration('ff0000', 3),
-    new ColorDuration('ff7878', 3),
-    new ColorDuration('ffffff', 2),
-    new ColorDuration('660099', 5),
-    new ColorDuration('333333', 3)
-  ]
-  const setAndSchedule = (colorArray, index) => {
-    colorObj = colorArray[index]
-    ioProm.then(io => io.emit('change-color', {color: colorObj.color}))
+  let seq = SequenceStore.namedSequence[req.params.name]
+  if (seq) {
+    const setAndSchedule = (colorArray, index) => {
+      colorObj = colorArray[index]
+      ioProm.then(io => io.emit('change-color', {color: colorObj.color}))
 
-    if (index < colorArray.length - 1) {
-      nextColor = colorArray[index+1]
-      setTimeout(() => setAndSchedule(colorArray, index + 1), colorObj.duration * 1000)
+      if (index < colorArray.length - 1) {
+        nextColor = colorArray[index+1]
+        setTimeout(() => setAndSchedule(colorArray, index + 1), colorObj.duration * 1000)
+      }
     }
-  }
 
-  setAndSchedule(seq, 0)
-  res.send()
+    setAndSchedule(seq, 0)
+    res.send()
+  } else {
+    res.send({error: "No sequence found named " + req.params.name})
+  }
 })
 
 ioProm.then(io => {
