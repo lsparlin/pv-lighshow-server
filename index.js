@@ -12,12 +12,11 @@ var port = process.env.PORT || 3000
 var server = ioProm.init(app)
 var db
 
-var mongodb_url = process.env.MONGODB_URI ||  'mongodb://127.0.0.1:27017'
+var mongodb_url = process.env.MONGODB_URI ||  'mongodb://127.0.0.1:27017/pv_lightshow'
 console.log(mongodb_url)
-const PV_LIGHTSHOW_DB = 'pv_lightshow'
 const SEQ_COLLECTION_NAME = 'color_sequence_test'
 
-MongoClient.connect(mongodb_url + '/' + PV_LIGHTSHOW_DB, (err, database) => {
+MongoClient.connect(mongodb_url, (err, database) => {
   if (err) return console.log(err)
   db = database
   server.listen(port, () => {
