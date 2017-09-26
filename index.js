@@ -13,6 +13,7 @@ var server = ioProm.init(app)
 var db
 
 var mongodb_url = process.env.MONGODB_URI ||  'mongodb://127.0.0.1:27017'
+console.log(mongodb_url)
 const PV_LIGHTSHOW_DB = 'pv_lightshow'
 const SEQ_COLLECTION_NAME = 'color_sequence_test'
 
