@@ -13,8 +13,7 @@ var server = ioProm.init(app)
 var db
 
 var mongodb_url = process.env.MONGODB_URI ||  'mongodb://127.0.0.1:27017/pv_lightshow'
-console.log(mongodb_url)
-const SEQ_COLLECTION_NAME = 'color_sequence_test'
+const SEQ_COLLECTION_NAME = 'color_sequence'
 
 MongoClient.connect(mongodb_url, (err, database) => {
   if (err) return console.log(err)
