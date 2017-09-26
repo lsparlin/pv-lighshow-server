@@ -1,16 +1,32 @@
-var express = require('express')
-var ioProm = require('express-socket.io')
-var cors = require('cors')
+const express = require('express')
+const expBodyParser = require('body-parser')
+const ioProm = require('express-socket.io')
+const cors = require('cors')
+const MongoClient = require('mongodb').MongoClient
 
-var SequenceStore = require('./src/js/SequenceStore.js')
+const ColorDuration = require('./src/js/ColorDuration.js')
+const SequenceStore = require('./src/js/SequenceStore.js')
 
 const app = express()
 var port = process.env.PORT || 3000
 var server = ioProm.init(app)
+var db
+
+var mongodb_url = process.env.MONGODB_URI ||  'mongodb://127.0.0.1:27017'
+const PV_LIGHTSHOW_DB = 'pv_lightshow'
+const SEQ_COLLECTION_NAME = 'color_sequence_test'
+
+MongoClient.connect(mongodb_url + '/' + PV_LIGHTSHOW_DB, (err, database) => {
+  if (err) return console.log(err)
+  db = database
+  server.listen(port, () => {
+    console.log('listening on ' + port)
+  })
+})
 
 app.use(cors())
+app.use(expBodyParser.json())
 
-// {credentials: true, origin: 'http://localhost:8080'}
 app.get('/', (req, res) => {
   res.send({status: 'success', info: {ip: req.ip, domain: req.domain}})
 })
@@ -22,23 +38,56 @@ app.put('/color/:color', (req, res) => {
 })
 
 app.put('/sequence/:name', (req, res) => {
-  let seq = SequenceStore.namedSequence[req.params.name]
-  if (seq) {
-    const setAndSchedule = (colorArray, index) => {
-      colorObj = colorArray[index]
-      ioProm.then(io => io.emit('change-color', {color: colorObj.color}))
+  db.collection(SEQ_COLLECTION_NAME).find({name: req.params.name}).toArray((err, results) => {
+    var seq = results.length && results[0].colorSequence
+    if (seq) {
+      const setAndSchedule = (colorArray, index) => {
+        colorObj = colorArray[index]
+        ioProm.then(io => io.emit('change-color', {color: colorObj.color}))
 
-      if (index < colorArray.length - 1) {
-        nextColor = colorArray[index+1]
-        setTimeout(() => setAndSchedule(colorArray, index + 1), colorObj.duration * 1000)
+        if (index < colorArray.length - 1) {
+          nextColor = colorArray[index+1]
+          setTimeout(() => setAndSchedule(colorArray, index + 1), colorObj.duration * 1000)
+        }
       }
+
+      setAndSchedule(seq, 0)
+      res.send()
+    } else {
+      res.send({error: "No sequence found named " + req.params.name})
     }
 
-    setAndSchedule(seq, 0)
-    res.send()
+  })
+
+})
+
+app.put('/sequence', (req, res) => {
+  let sequence = req.body.sequence
+  if (sequence.name && sequence.colorSequence && Array.isArray(sequence.colorSequence)) {
+    let finalSequence = { name: sequence.name,
+      colorSequence: sequence.colorSequence.filter(item => ColorDuration.isColorDuration(item))
+    }
+    if (finalSequence.colorSequence.length == 0) {
+      return res.status(400).send({"message": "color sequence was empty"})
+    }
+
+    db.collection(SEQ_COLLECTION_NAME).save(finalSequence, (err, result) => {
+    
+      res.send()
+    })
   } else {
-    res.send({error: "No sequence found named " + req.params.name})
+    res.status(400).send({"message": "object structure is incorrect"})
   }
+
+})
+
+app.get('/testdb', (req, res) => {
+  var collection
+  db.collection(SEQ_COLLECTION_NAME).find().toArray((err, results) => {
+    collection = results
+
+    res.send(collection)
+  })
 })
 
 ioProm.then(io => {
@@ -46,6 +95,3 @@ ioProm.then(io => {
   })
 })
 
-server.listen(port, () => {
-  console.log('listening on ' + port)
-})
