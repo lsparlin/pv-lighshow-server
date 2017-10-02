@@ -3,6 +3,7 @@ const expBodyParser = require('body-parser')
 const ioProm = require('express-socket.io')
 const cors = require('cors')
 const MongoClient = require('mongodb').MongoClient
+const Password = require('password-hash-and-salt')
 
 const ColorDuration = require('./src/js/ColorDuration.js')
 const SequenceStore = require('./src/js/SequenceStore.js')
@@ -80,6 +81,8 @@ app.put('/sequence', (req, res) => {
 
 })
 
+// Throw away paths
+
 app.get('/testdb', (req, res) => {
   var collection
   db.collection(SEQ_COLLECTION_NAME).find().toArray((err, results) => {
@@ -87,6 +90,23 @@ app.get('/testdb', (req, res) => {
 
     res.send(collection)
   })
+})
+
+app.get('/test_auth', (req, res) => {
+  var u = req.query.username
+  var p = req.query.password
+  if (u && p) {
+    db.collection('users').findOne({'username': u}, (err, doc) => {
+      if (err || !doc) return res.status(500).send()
+      var user = doc
+      Password(p).verifyAgainst(user.hash, (err, verified) => {
+        if (err) return res.status(500).send()
+        res.send(verified)
+      })
+    })
+  } else {
+    res.status(500).send({'message': 'missing params'})
+  }
 })
 
 ioProm.then(io => {
