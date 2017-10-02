@@ -93,21 +93,32 @@ app.get('/testdb', (req, res) => {
 })
 
 app.get('/test_auth', (req, res) => {
-  var u = req.query.username
-  var p = req.query.password
-  if (u && p) {
-    db.collection('users').findOne({'username': u}, (err, doc) => {
-      if (err || !doc) return res.status(500).send()
+  authenticate(req.query.username, req.query.password, (verified) => {
+    if (verified) {
+      res.send(verified)
+    } else {
+      res.status(401).send()
+    }
+  
+  })
+
+})
+
+function authenticate(username, password, resCallback) {
+  if (username && password) {
+    db.collection('users').findOne({'username': username}, (err, doc) => {
+      if (err || !doc) return resCallback(false)
       var user = doc
-      Password(p).verifyAgainst(user.hash, (err, verified) => {
-        if (err) return res.status(500).send()
-        res.send(verified)
+      Password(password).verifyAgainst(user.hash, (err, verified) => {
+        console.log(verified)
+        if (err) return resCallback(false)
+        return resCallback(verified)
       })
     })
   } else {
-    res.status(500).send({'message': 'missing params'})
+    return resCallback(false)
   }
-})
+}
 
 ioProm.then(io => {
   io.on('connection', (socket) => {
