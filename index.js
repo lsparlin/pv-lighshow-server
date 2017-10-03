@@ -51,6 +51,8 @@ app.put('/sequence/:name', (req, res) => {
         if (index < colorArray.length - 1) {
           nextColor = colorArray[index+1]
           setTimeout(() => setAndSchedule(colorArray, index + 1), colorObj.duration * 1000)
+        } else {
+          setTimeout(() => io.emit('thank-you-page'), colorObj.duration * 1000)
         }
       }
 
