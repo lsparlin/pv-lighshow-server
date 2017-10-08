@@ -16,7 +16,7 @@ const checkOrigin = (origin, callback) => {
     console.log('undefined origin found!')
     return callback(null, true)
   }
-  var match = allowedOrigins.find(allowed => origin.includes(allowed))
+  var match = allowedOrigins.find(allowed => origin && origin.includes(allowed))
   if (match) callback(null, true)
   else callback(new Error('Origin ' + origin + ' is not on whitelist'))
 }
