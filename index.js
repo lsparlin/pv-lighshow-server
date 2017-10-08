@@ -11,12 +11,17 @@ const SequenceStore = require('./src/js/SequenceStore.js')
 
 const app = express()
 let allowedOrigins = ['localhost:8080', 'pv-lightshow-admin.netlify.com']
+const checkOrigin = (origin, callback) => {
+  if (!origin && process.env.DEV_ENVIRONMENT === 'local') {
+    console.log('undefined origin found!')
+    return callback(null, true)
+  }
+  var match = allowedOrigins.find(allowed => origin.includes(allowed))
+  if (match) callback(null, true)
+  else callback(new Error('Origin ' + origin + ' is not on whitelist'))
+}
 app.use(cors({
-  origin: (origin, callback) => {
-    var match = allowedOrigins.find(allowed => origin.includes(allowed))
-    if (match) callback(null, true)
-    else callback(new Error('Origin ' + origin + ' is not on whitelist'))
-  },
+  origin: checkOrigin,
   credentials: true
 }))
 app.use(bodyParser.json())
