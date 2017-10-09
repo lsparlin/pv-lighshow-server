@@ -34,7 +34,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    expires: 600000
+    expires: 86400000 // 24 hours
   }
 }))
 app.use((req, res, next) => { // log out if session is not consistent with cookie
