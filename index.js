@@ -115,6 +115,7 @@ app.put('/sequence', forceAuth, (req, res) => {
   if (sequence.name && sequence.colorSequence && Array.isArray(sequence.colorSequence)) {
     let finalSequence = { name: sequence.name,
       colorSequence: sequence.colorSequence.filter(item => ColorDuration.isColorDuration(item)),
+      order_index: 999,
       deleted: false
     }
     if (finalSequence.colorSequence.length == 0) {
@@ -131,9 +132,25 @@ app.put('/sequence', forceAuth, (req, res) => {
 
 })
 
-app.delete('/sequence/:sequenceId',  (req, res) => {
-  db.collection(SEQ_COLLECTION_NAME).update({"_id": mongo.ObjectID(req.params.sequenceId)}, {$set: {deleted: true}}, {}, (error, result) => {
+app.put('/sequence/reorder', forceAuth, (req, res) => {
+  let sequenceOrderArray = req.body.sequenceOrder
+  if (Array.isArray(sequenceOrderArray) && sequenceOrderArray.length && sequenceOrderArray[0].id && sequenceOrderArray[0].order_index >= 0) {
+   sequenceOrderArray.forEach( seq => {
+     db.collection(SEQ_COLLECTION_NAME).update({"_id": mongo.ObjectID(seq.id)}, {$set: {"order_index": seq.order_index}})
+   })
     res.send()
+  } else {
+    res.status(400).send({"message": "object structure is incorrect"})
+  }
+})
+
+app.delete('/sequence/:sequenceId', forceAuth,  (req, res) => {
+  db.collection(SEQ_COLLECTION_NAME).findAndModify({"_id": mongo.ObjectID(req.params.sequenceId)}, [], {$set: {deleted: true}}, {new: true}, (error, doc) => {
+    if (doc.ok === 1) {
+      res.send()
+    } else {
+      res.status(500).send()
+    }
   })
 })
 
