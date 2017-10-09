@@ -3,8 +3,9 @@ const session = require('express-session')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const cors = require('cors')
-const MongoClient = require('mongodb').MongoClient
+const mongo = require('mongodb')
 const Password = require('password-hash-and-salt')
+const MongoClient = mongo.MongoClient
 
 const ColorDuration = require('./src/js/ColorDuration.js')
 const SequenceStore = require('./src/js/SequenceStore.js')
@@ -99,6 +100,43 @@ app.put('/color/:color', forceAuth, (req, res) => {
   res.send()
 })
 
+app.get('/sequence', forceAuth, (req, res) => {
+  let query = {$or: [
+    {deleted: {$exists: false}},
+    {deleted: false}
+  ]}
+  db.collection(SEQ_COLLECTION_NAME).find(query, {sort: [['order_index',1],['name',1]]}).toArray((err, results) => {
+    res.send(results)
+  })
+})
+
+app.put('/sequence', forceAuth, (req, res) => {
+  let sequence = req.body.sequence
+  if (sequence.name && sequence.colorSequence && Array.isArray(sequence.colorSequence)) {
+    let finalSequence = { name: sequence.name,
+      colorSequence: sequence.colorSequence.filter(item => ColorDuration.isColorDuration(item)),
+      deleted: false
+    }
+    if (finalSequence.colorSequence.length == 0) {
+      return res.status(400).send({"message": "color sequence was empty"})
+    }
+
+    db.collection(SEQ_COLLECTION_NAME).save(finalSequence, (err, result) => {
+    
+      res.send()
+    })
+  } else {
+    res.status(400).send({"message": "object structure is incorrect"})
+  }
+
+})
+
+app.delete('/sequence/:sequenceId',  (req, res) => {
+  db.collection(SEQ_COLLECTION_NAME).update({"_id": mongo.ObjectID(req.params.sequenceId)}, {$set: {deleted: true}}, {}, (error, result) => {
+    res.send()
+  })
+})
+
 app.put('/sequence/:name',forceAuth, (req, res) => {
   db.collection(SEQ_COLLECTION_NAME).find({name: req.params.name}).toArray((err, results) => {
     var seq = results.length && results[0].colorSequence
@@ -123,35 +161,6 @@ app.put('/sequence/:name',forceAuth, (req, res) => {
 
   })
 
-})
-
-app.put('/sequence', forceAuth, (req, res) => {
-  let sequence = req.body.sequence
-  if (sequence.name && sequence.colorSequence && Array.isArray(sequence.colorSequence)) {
-    let finalSequence = { name: sequence.name,
-      colorSequence: sequence.colorSequence.filter(item => ColorDuration.isColorDuration(item))
-    }
-    if (finalSequence.colorSequence.length == 0) {
-      return res.status(400).send({"message": "color sequence was empty"})
-    }
-
-    db.collection(SEQ_COLLECTION_NAME).save(finalSequence, (err, result) => {
-    
-      res.send()
-    })
-  } else {
-    res.status(400).send({"message": "object structure is incorrect"})
-  }
-
-})
-
-app.get('/sequence', forceAuth, (req, res) => {
-  var collection
-  db.collection(SEQ_COLLECTION_NAME).find().toArray((err, results) => {
-    collection = results
-
-    res.send(collection)
-  })
 })
 
 function authenticate(username, password) {
