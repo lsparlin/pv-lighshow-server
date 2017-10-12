@@ -154,9 +154,9 @@ app.delete('/sequence/:sequenceId', forceAuth,  (req, res) => {
   })
 })
 
-app.put('/sequence/:name',forceAuth, (req, res) => {
-  db.collection(SEQ_COLLECTION_NAME).find({name: req.params.name}).toArray((err, results) => {
-    var seq = results.length && results[0].colorSequence
+app.put('/sequence/:sequenceId', forceAuth, (req, res) => {
+  db.collection(SEQ_COLLECTION_NAME).findOne({"_id": mongo.ObjectID(req.params.sequenceId)}, (err, doc) => {
+    var seq = doc
     if (seq) {
       const setAndSchedule = (colorArray, index) => {
         colorObj = colorArray[index]
@@ -166,18 +166,23 @@ app.put('/sequence/:name',forceAuth, (req, res) => {
           nextColor = colorArray[index+1]
           setTimeout(() => setAndSchedule(colorArray, index + 1), colorObj.duration * 1000)
         } else {
-          setTimeout(() => io.emit('thank-you-page'), colorObj.duration * 1000)
+          setTimeout(() => io.emit('conclude'), colorObj.duration * 1000)
         }
       }
 
-      setAndSchedule(seq, 0)
+      setAndSchedule(seq.colorSequence, 0)
       res.send()
     } else {
       res.send({error: "No sequence found named " + req.params.name})
     }
-
   })
 
+})
+
+app.put('/conclude', forceAuth, (req, res) => {
+  io.emit('conclude', {location: 'http://www.libertylightshow.org'})
+
+  res.send()
 })
 
 function authenticate(username, password) {
