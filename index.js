@@ -165,9 +165,7 @@ app.put('/sequence/:sequenceId', forceAuth, (req, res) => {
         if (index < colorArray.length - 1) {
           nextColor = colorArray[index+1]
           setTimeout(() => setAndSchedule(colorArray, index + 1), colorObj.duration * 1000)
-        } else {
-          setTimeout(() => io.emit('conclude'), colorObj.duration * 1000)
-        }
+        } 
       }
 
       setAndSchedule(seq.colorSequence, 0)
