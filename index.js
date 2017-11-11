@@ -113,17 +113,20 @@ app.get('/sequence', forceAuth, (req, res) => {
 app.put('/sequence', forceAuth, (req, res) => {
   let sequence = req.body.sequence
   if (sequence.name && sequence.colorSequence && Array.isArray(sequence.colorSequence)) {
+    let idToUpdate = mongo.ObjectID()
     let finalSequence = { name: sequence.name,
       colorSequence: sequence.colorSequence.filter(item => ColorDuration.isColorDuration(item)),
-      order_index: 999,
+      order_index: sequence.order_index || 999,
       deleted: false
     }
     if (finalSequence.colorSequence.length == 0) {
       return res.status(400).send({"message": "color sequence was empty"})
     }
+    if (sequence._id) {
+      idToUpdate = mongo.ObjectID(sequence._id)
+    }
 
-    db.collection(SEQ_COLLECTION_NAME).save(finalSequence, (err, result) => {
-    
+    db.collection(SEQ_COLLECTION_NAME).update({"_id": idToUpdate}, finalSequence, {upsert: true, w: 1}, (err, numberUpdated) => {
       res.send()
     })
   } else {
