@@ -191,7 +191,7 @@ app.put('/sequence/:sequenceId', forceAuth, (req, res) => {
 })
 
 app.put('/conclude', forceAuth, (req, res) => {
-  io.emit('conclude', {location: 'http://www.libertylightshow.org'})
+  io.emit('conclude')
 
   res.send()
 })
