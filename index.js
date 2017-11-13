@@ -60,6 +60,7 @@ io.on('connection', (socket) => {
 var db
 var mongodb_url = process.env.MONGODB_URI ||  'mongodb://127.0.0.1:27017/pv_lightshow'
 const SEQ_COLLECTION_NAME = 'color_sequence'
+const SETTINGS_COLLECTION_NAME = 'site_settings'
 
 MongoClient.connect(mongodb_url, (err, database) => {
   if (err) return console.log(err)
@@ -80,6 +81,12 @@ var forceAuth = (req, res, next) => {
 
 app.get('/', forceAuth, (req, res) => {
   res.send({status: 'success', info: {ip: req.ip, domain: req.domain}})
+})
+
+app.get('/settings', (req, res) => {
+  db.collection(SETTINGS_COLLECTION_NAME).findOne({'_id': '1'}, (err, doc) => {
+    res.send(doc)
+  })
 })
 
 app.post('/login', (req, res) => {
