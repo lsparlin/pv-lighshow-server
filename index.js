@@ -116,8 +116,11 @@ app.put('/sequence', forceAuth, (req, res) => {
     let idToUpdate = mongo.ObjectID()
     let finalSequence = { name: sequence.name,
       colorSequence: sequence.colorSequence.filter(item => ColorDuration.isColorDuration(item)),
-      order_index: sequence.order_index || 999,
+      order_index: sequence.order_index,
       deleted: false
+    }
+    if (finalSequence.order_index === undefined) {
+      finalSequence.order_index = 999
     }
     if (finalSequence.colorSequence.length == 0) {
       return res.status(400).send({"message": "color sequence was empty"})
