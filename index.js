@@ -101,6 +101,19 @@ app.post('/login', (req, res) => {
   })
 })
 
+app.put('/settings/put_one', forceAuth, (req, res) => {
+  let setting = req.body.setting
+  const ALLOWED_SETTINGS = ['conclusionUrl', 'introductoryText']
+
+  if (ALLOWED_SETTINGS.includes(setting.name)) {
+    db.collection(SETTINGS_COLLECTION_NAME).update({"_id": '1'}, {$set: {[setting.name]: setting.value}}, (err, numberUpdated) => {
+      res.send()
+    })
+  } else {
+    res.status(400).send({"message": "unknown setting: " + setting.name})
+  }
+})
+
 app.put('/color/:color', forceAuth, (req, res) => {
   io.emit('change-color', {color: req.params.color})
 
