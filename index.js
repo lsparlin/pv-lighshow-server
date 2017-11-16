@@ -53,6 +53,7 @@ const server = app.listen(port, () => {
 const io = require('socket.io')(server)
 io.on('connection', (socket) => {
   console.log('a client connected')
+  socket.on('lat-ping', () => socket.emit('lat-pong'))
   socket.on('disconnect', () => console.log('a client disconnected'))
 })
 
@@ -190,8 +191,8 @@ app.put('/sequence/:sequenceId', forceAuth, (req, res) => {
         if (index < colorArray.length - 1) {
           colorData.next = { color: colorArray[index + 1].color, afterDur: colorObj.duration * 1000 }
         }
+        
         io.emit('change-color', colorData)
-
         if (index < colorArray.length - 1) {
           nextColor = colorArray[index+1]
           setTimeout(() => setAndSchedule(colorArray, index + 1), colorObj.duration * 1000)
