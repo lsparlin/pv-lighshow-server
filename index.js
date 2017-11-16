@@ -186,7 +186,11 @@ app.put('/sequence/:sequenceId', forceAuth, (req, res) => {
     if (seq) {
       const setAndSchedule = (colorArray, index) => {
         colorObj = colorArray[index]
-        io.emit('change-color', {color: colorObj.color})
+        var colorData = { color: colorObj.color }
+        if (index < colorArray.length - 1) {
+          colorData.next = { color: colorArray[index + 1].color, afterDur: colorObj.duration * 1000 }
+        }
+        io.emit('change-color', colorData)
 
         if (index < colorArray.length - 1) {
           nextColor = colorArray[index+1]
