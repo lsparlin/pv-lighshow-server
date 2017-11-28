@@ -6,7 +6,11 @@ class ColorDuration {
 
   static isColorDuration(obj) {
     let props = Object.keys(obj)
-    return (props.length == 2 && props.includes('color') && props.includes('duration'))
+    if (props.length == 2) {
+       return props.includes('color') && props.includes('duration')
+    } else if (props.length == 3) {
+       return props.includes('color') && props.includes('duration') && props.includes('message')
+    }
   }
 }
 
