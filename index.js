@@ -102,6 +102,12 @@ app.post('/login', (req, res) => {
   })
 })
 
+app.get('/logout', (req, res) => {
+  res.clearCookie('user_sid');        
+  req.session.user = undefined
+  res.send('Logout success')
+})
+
 app.put('/settings/put_one', forceAuth, (req, res) => {
   let setting = req.body.setting
   const ALLOWED_SETTINGS = ['conclusionUrl', 'introductoryText']
