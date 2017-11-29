@@ -110,7 +110,7 @@ app.get('/logout', (req, res) => {
 
 app.put('/settings/put_one', forceAuth, (req, res) => {
   let setting = req.body.setting
-  const ALLOWED_SETTINGS = ['conclusionUrl', 'introductoryText']
+  const ALLOWED_SETTINGS = ['conclusionUrl', 'introductoryText', 'editingLocked']
 
   if (ALLOWED_SETTINGS.includes(setting.name)) {
     db.collection(SETTINGS_COLLECTION_NAME).update({"_id": '1'}, {$set: {[setting.name]: setting.value}}, (err, numberUpdated) => {
