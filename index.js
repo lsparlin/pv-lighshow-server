@@ -90,6 +90,11 @@ app.get('/settings', (req, res) => {
   })
 })
 
+app.get('/user_info', forceAuth, (req, res) => {
+  let user = req.session.user
+  res.send({username: user.username, is_master: user.is_master})
+})
+
 app.post('/login', (req, res) => {
   var username = req.body.username,
       password = req.body.password
