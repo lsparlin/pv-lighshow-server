@@ -192,6 +192,13 @@ app.delete('/sequence/:sequenceId', forceAuth,  (req, res) => {
   })
 })
 
+let currentTimeout = undefined
+app.put('/sequence/stop', forceAuth, (req, res) => {
+  currentTimeout && clearTimeout(currentTimeout)
+  io.emit('stop')
+  res.send()
+})
+
 app.put('/sequence/:sequenceId', forceAuth, (req, res) => {
   db.collection(SEQ_COLLECTION_NAME).findOne({"_id": mongo.ObjectID(req.params.sequenceId)}, (err, doc) => {
     var seq = doc
@@ -206,7 +213,7 @@ app.put('/sequence/:sequenceId', forceAuth, (req, res) => {
         io.emit('change-color', colorData)
         if (index < colorArray.length - 1) {
           nextColor = colorArray[index+1]
-          setTimeout(() => setAndSchedule(colorArray, index + 1), colorObj.duration * 1000)
+          currentTimeout = setTimeout(() => setAndSchedule(colorArray, index + 1), colorObj.duration * 1000)
         } 
       }
 
