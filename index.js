@@ -14,7 +14,7 @@ const app = express()
 let allowedOrigins = ['localhost:8080', 'pv-lightshow-admin.netlify.com']
 const checkOrigin = (origin, callback) => {
   if (!origin) {
-    console.log('undefined origin found!')
+    console.log('undefined origin found! "' + origin + '"')
   }
   return callback(null, true)
   //var match = allowedOrigins.find(allowed => origin && origin.includes(allowed))
