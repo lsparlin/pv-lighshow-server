@@ -13,7 +13,7 @@ pipelines:
         script: # Modify the commands below to build your repository.
           - npm install
           - npm test
-          - docker login -u $HEROKU_USERNAME -p $HEROKU_TOKEN registry.heroku.com
+          - docker login --username=_ --password=$HEROKU_TOKEN registry.heroku.com
           - docker build registry.heroku.com/$HEROKU_APP_NAME/web .
           - docker push registry.heroku.com/$HEROKU_APP_NAME/web
 options:
